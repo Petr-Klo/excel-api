@@ -3,19 +3,19 @@ import pandas as pd
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return 'Excel API is running!'
-
-@app.route('/json_process', methods=['POST'])
-def json_process():
-    data = request.get_json()
+@app.route("/json_process", methods=["POST"])
+def process_json():
+    content = request.get_json()
+    operation = content.get("operation")
+    data = content.get("data")
+    
     df = pd.DataFrame(data)
-    
-    # Add a column with row-wise sum of numeric columns
-    df['Total'] = df.select_dtypes(include='number').sum(axis=1)
-    
-    return jsonify(df.to_dict(orient='records'))
 
-if __name__ == '__main__':
-    app.run()
+    if operation == "discount":
+        df["DiscountedPrice"] = df["Price"] * 0.9
+    elif operation == "total":
+        df["Total"] = df.select_dtypes(include="number").sum(axis=1)
+    elif operation == "summary":
+        return jsonify(df.describe().to_dict())
+
+    return jsonify(df.to_dict(orient="records"))
